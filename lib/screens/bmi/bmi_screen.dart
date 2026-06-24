@@ -11,42 +11,72 @@ class _BMIScreenState extends State<BMIScreen> {
   final heightController = TextEditingController();
   final weightController = TextEditingController();
 
-  String result = "";
-  String status = "";
+  double bmi = 0;
+  String category = "";
+  String recommendation = "";
+  Color bmiColor = Colors.grey;
 
   void calculateBMI() {
-    if (heightController.text.isEmpty || weightController.text.isEmpty) {
-      return;
-    }
+    double height = double.tryParse(heightController.text.trim()) ?? 0;
 
-    double height = double.parse(heightController.text);
-    double weight = double.parse(weightController.text);
+    double weight = double.tryParse(weightController.text.trim()) ?? 0;
 
-    double bmi = weight / ((height / 100) * (height / 100));
+    if (height <= 0 || weight <= 0) return;
 
-    if (bmi < 18.5) {
+    double heightInMeter = height / 100;
+
+    double result = weight / (heightInMeter * heightInMeter);
+
+    String status;
+    String advice;
+    Color statusColor;
+
+    if (result < 18.5) {
       status = "Underweight";
-    } else if (bmi < 25) {
-      status = "Normal";
-    } else if (bmi < 30) {
+      advice =
+          "You should increase your calorie intake and follow a healthy weight gain diet.";
+      statusColor = Colors.orange;
+    } else if (result < 25) {
+      status = "Normal Weight";
+      advice = "Great! Maintain your current healthy lifestyle.";
+      statusColor = Colors.green;
+    } else if (result < 30) {
       status = "Overweight";
+      advice = "Try regular exercise and a balanced diet to reduce weight.";
+      statusColor = Colors.amber;
     } else {
       status = "Obese";
+      advice =
+          "Consult a healthcare professional and follow a structured weight loss plan.";
+      statusColor = Colors.red;
     }
 
     setState(() {
-      result = bmi.toStringAsFixed(2);
+      bmi = result;
+      category = status;
+      recommendation = advice;
+      bmiColor = statusColor;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("BMI Calculator")),
-      body: Padding(
+      appBar: AppBar(
+        title: const Text("BMI Calculator"),
+        backgroundColor: Colors.purple,
+        foregroundColor: Colors.white,
+      ),
+
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
+
         child: Column(
           children: [
+            const Icon(Icons.monitor_weight, size: 90, color: Colors.purple),
+
+            const SizedBox(height: 20),
+
             TextField(
               controller: heightController,
               keyboardType: TextInputType.number,
@@ -71,39 +101,61 @@ class _BMIScreenState extends State<BMIScreen> {
 
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 55,
               child: ElevatedButton(
                 onPressed: calculateBMI,
-                child: const Text("Calculate BMI"),
+                child: const Text(
+                  "Calculate BMI",
+                  style: TextStyle(fontSize: 18),
+                ),
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 25),
 
-            if (result.isNotEmpty)
+            if (bmi > 0)
               Card(
                 elevation: 5,
                 child: Padding(
                   padding: const EdgeInsets.all(20),
+
                   child: Column(
                     children: [
                       Text(
-                        "BMI: $result",
-                        style: const TextStyle(
-                          fontSize: 28,
+                        bmi.toStringAsFixed(2),
+                        style: TextStyle(
+                          fontSize: 40,
                           fontWeight: FontWeight.bold,
+                          color: bmiColor,
                         ),
                       ),
 
                       const SizedBox(height: 10),
 
                       Text(
-                        status,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          color: Colors.blue,
+                        category,
+                        style: TextStyle(
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
+                          color: bmiColor,
                         ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      Text(
+                        recommendation,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      const Divider(),
+
+                      const Text(
+                        "Healthy BMI Range: 18.5 - 24.9",
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),

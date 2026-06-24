@@ -1,44 +1,62 @@
 import 'package:flutter/material.dart';
 
+import '../../models/user_model.dart';
+import '../../utils/diet_generator.dart';
+
 class DietScreen extends StatelessWidget {
-  const DietScreen({super.key});
+  final UserModel user;
+
+  const DietScreen({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
+    final meals = DietGenerator.generate(user);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Diet Plan"),
+        title: const Text("Personal Diet Plan"),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ),
-      body: ListView(
+      body: Padding(
         padding: const EdgeInsets.all(20),
-        children: const [
-          DietCard(meal: "Breakfast", food: "Oats, Banana, Milk"),
-          DietCard(meal: "Lunch", food: "Rice, Chicken, Vegetables"),
-          DietCard(meal: "Evening Snack", food: "Apple and Nuts"),
-          DietCard(meal: "Dinner", food: "Fish, Salad, Soup"),
-        ],
-      ),
-    );
-  }
-}
+        child: Column(
+          children: [
+            Card(
+              elevation: 5,
+              child: ListTile(
+                leading: const Icon(Icons.person),
+                title: Text(user.name),
+                subtitle: Text("${user.goal} • ${user.activityLevel}"),
+              ),
+            ),
 
-class DietCard extends StatelessWidget {
-  final String meal;
-  final String food;
+            const SizedBox(height: 20),
 
-  const DietCard({super.key, required this.meal, required this.food});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      margin: const EdgeInsets.only(bottom: 15),
-      child: ListTile(
-        leading: const Icon(Icons.restaurant, color: Colors.green, size: 40),
-        title: Text(meal, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(food),
+            Expanded(
+              child: ListView.builder(
+                itemCount: meals.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    elevation: 5,
+                    margin: const EdgeInsets.only(bottom: 15),
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.restaurant,
+                        color: Colors.green,
+                      ),
+                      title: Text(
+                        meals[index]["meal"]!,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(meals[index]["food"]!),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

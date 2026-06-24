@@ -1,66 +1,62 @@
 import 'package:flutter/material.dart';
 
+import '../../models/user_model.dart';
+import '../../utils/workout_generator.dart';
+
 class WorkoutScreen extends StatelessWidget {
-  const WorkoutScreen({super.key});
+  final UserModel user;
+
+  const WorkoutScreen({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
+    final workouts = WorkoutGenerator.generate(user);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Workout Plans"),
+        title: const Text("Personal Workout Plan"),
         backgroundColor: Colors.orange,
         foregroundColor: Colors.white,
       ),
-      body: ListView(
+      body: Padding(
         padding: const EdgeInsets.all(20),
-        children: const [
-          WorkoutCard(
-            title: "Push Ups",
-            description: "3 Sets × 15 Reps",
-            icon: Icons.fitness_center,
-          ),
-          WorkoutCard(
-            title: "Squats",
-            description: "3 Sets × 20 Reps",
-            icon: Icons.accessibility_new,
-          ),
-          WorkoutCard(
-            title: "Plank",
-            description: "60 Seconds",
-            icon: Icons.timer,
-          ),
-          WorkoutCard(
-            title: "Running",
-            description: "20 Minutes",
-            icon: Icons.directions_run,
-          ),
-        ],
-      ),
-    );
-  }
-}
+        child: Column(
+          children: [
+            Card(
+              elevation: 5,
+              child: ListTile(
+                leading: const Icon(Icons.person),
+                title: Text(user.name),
+                subtitle: Text("${user.goal} • ${user.activityLevel}"),
+              ),
+            ),
 
-class WorkoutCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final IconData icon;
+            const SizedBox(height: 20),
 
-  const WorkoutCard({
-    super.key,
-    required this.title,
-    required this.description,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      margin: const EdgeInsets.only(bottom: 15),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.orange, size: 40),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(description),
+            Expanded(
+              child: ListView.builder(
+                itemCount: workouts.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    elevation: 5,
+                    margin: const EdgeInsets.only(bottom: 15),
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.fitness_center,
+                        color: Colors.orange,
+                      ),
+                      title: Text(
+                        workouts[index]["title"]!,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(workouts[index]["desc"]!),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
