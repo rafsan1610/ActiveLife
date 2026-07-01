@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../providers/user_provider.dart';
+import '../../providers/sleep_provider.dart';
+import '../../providers/weight_provider.dart';
+import '../../providers/workout_progress_provider.dart';
 
 import '../auth/login_screen.dart';
 import '../profile/profile_screen.dart';
+import '../workout/workout_screen.dart';
+import '../diet/diet_screen.dart';
 import '../bmi/bmi_screen.dart';
 import '../calories/calories_screen.dart';
 import '../water/water_screen.dart';
+import '../sleep/sleep_screen.dart';
 import '../progress/progress_screen.dart';
-import '../workout/workout_screen.dart';
-import '../diet/diet_screen.dart';
+import '../weight/weight_screen.dart';
+import '../wellness/wellness_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -27,9 +33,12 @@ class DashboardScreen extends StatelessWidget {
         title: const Text("ActiveLife"),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
+        elevation: 0,
+
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
+
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
 
@@ -47,11 +56,14 @@ class DashboardScreen extends StatelessWidget {
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
+
         child: Column(
           children: [
             Container(
               width: double.infinity,
+
               padding: const EdgeInsets.all(20),
+
               decoration: BoxDecoration(
                 color: Colors.green,
                 borderRadius: BorderRadius.circular(20),
@@ -59,12 +71,14 @@ class DashboardScreen extends StatelessWidget {
 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+
                 children: [
                   Text(
                     "Hello ${firebaseUser?.email?.split('@')[0] ?? "User"} 👋",
+
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
+                      fontSize: 25,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -73,11 +87,21 @@ class DashboardScreen extends StatelessWidget {
 
                   if (user != null) ...[
                     Text(
-                      "BMI : ${user.bmi.toStringAsFixed(2)}",
+                      "Goal : ${user.goal}",
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 5),
+
+                    Text(
+                      "BMI : ${user.bmi.toStringAsFixed(2)}",
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
                       ),
                     ),
 
@@ -102,9 +126,66 @@ class DashboardScreen extends StatelessWidget {
                     ),
                   ] else
                     const Text(
-                      "Stay Fit, Stay Healthy",
+                      "Complete your profile to unlock all features.",
+
                       style: TextStyle(color: Colors.white70, fontSize: 16),
                     ),
+
+                  const SizedBox(height: 20),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: infoCard(
+                          Icons.monitor_weight,
+                          Colors.orange,
+                          WeightProvider.hasWeight()
+                              ? "${WeightProvider.getWeight()} kg"
+                              : "--",
+                          "Weight",
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        child: infoCard(
+                          Icons.bedtime,
+                          Colors.deepPurple,
+                          SleepProvider.hasSleepData()
+                              ? "${SleepProvider.getSleep()} hr"
+                              : "--",
+                          "Sleep",
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: infoCard(
+                          Icons.fitness_center,
+                          Colors.orange,
+                          "${WorkoutProgressProvider.progress().toStringAsFixed(0)}%",
+                          "Workout",
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        child: infoCard(
+                          Icons.water_drop,
+                          Colors.blue,
+                          "0 / 8",
+                          "Water",
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -113,11 +194,17 @@ class DashboardScreen extends StatelessWidget {
 
             GridView.count(
               shrinkWrap: true,
+
               physics: const NeverScrollableScrollPhysics(),
+
               crossAxisCount: 2,
+
               crossAxisSpacing: 15,
+
               mainAxisSpacing: 15,
-              childAspectRatio: 1.1,
+
+              childAspectRatio: 1.08,
+
               children: [
                 dashboardCard(
                   context,
@@ -223,9 +310,48 @@ class DashboardScreen extends StatelessWidget {
 
                 dashboardCard(
                   context,
+                  "Sleep",
+                  Icons.bedtime,
+                  Colors.deepPurple,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SleepScreen()),
+                    );
+                  },
+                ),
+
+                dashboardCard(
+                  context,
+                  "Weight",
+                  Icons.monitor_weight,
+                  Colors.orange,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const WeightScreen()),
+                    );
+                  },
+                ),
+
+                dashboardCard(
+                  context,
+                  "Wellness",
+                  Icons.favorite,
+                  Colors.teal,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const WellnessScreen()),
+                    );
+                  },
+                ),
+
+                dashboardCard(
+                  context,
                   "Progress",
                   Icons.show_chart,
-                  Colors.teal,
+                  Colors.green,
                   () {
                     Navigator.push(
                       context,
@@ -241,6 +367,36 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  Widget infoCard(IconData icon, Color color, String value, String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: color.withOpacity(.15),
+            child: Icon(icon, color: color),
+          ),
+
+          const SizedBox(height: 10),
+
+          Text(
+            value,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 5),
+
+          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+        ],
+      ),
+    );
+  }
+
   Widget dashboardCard(
     BuildContext context,
     String title,
@@ -249,22 +405,34 @@ class DashboardScreen extends StatelessWidget {
     VoidCallback onTap,
   ) {
     return InkWell(
+      borderRadius: BorderRadius.circular(18),
       onTap: onTap,
       child: Card(
         elevation: 5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 45, color: color),
+        child: Container(
+          padding: const EdgeInsets.all(15),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: color.withOpacity(.15),
+                child: Icon(icon, color: color, size: 30),
+              ),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 15),
 
-            Text(
-              title,
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-            ),
-          ],
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
