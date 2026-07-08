@@ -17,6 +17,8 @@ import '../sleep/sleep_screen.dart';
 import '../progress/progress_screen.dart';
 import '../weight/weight_screen.dart';
 import '../wellness/wellness_screen.dart';
+import '../reminder/reminder_screen.dart';
+import '../fitness_coach/fitness_coach_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -38,7 +40,6 @@ class DashboardScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
 
@@ -75,7 +76,6 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   Text(
                     "Hello ${firebaseUser?.email?.split('@')[0] ?? "User"} 👋",
-
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 25,
@@ -127,7 +127,6 @@ class DashboardScreen extends StatelessWidget {
                   ] else
                     const Text(
                       "Complete your profile to unlock all features.",
-
                       style: TextStyle(color: Colors.white70, fontSize: 16),
                     ),
 
@@ -194,17 +193,11 @@ class DashboardScreen extends StatelessWidget {
 
             GridView.count(
               shrinkWrap: true,
-
               physics: const NeverScrollableScrollPhysics(),
-
               crossAxisCount: 2,
-
               crossAxisSpacing: 15,
-
               mainAxisSpacing: 15,
-
-              childAspectRatio: 1.08,
-
+              childAspectRatio: 0.95,
               children: [
                 dashboardCard(
                   context,
@@ -307,7 +300,6 @@ class DashboardScreen extends StatelessWidget {
                     );
                   },
                 ),
-
                 dashboardCard(
                   context,
                   "Sleep",
@@ -340,6 +332,15 @@ class DashboardScreen extends StatelessWidget {
                   Icons.favorite,
                   Colors.teal,
                   () {
+                    if (!UserProvider.hasUser()) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Please complete your profile first"),
+                        ),
+                      );
+                      return;
+                    }
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const WellnessScreen()),
@@ -356,6 +357,34 @@ class DashboardScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const ProgressScreen()),
+                    );
+                  },
+                ),
+
+                dashboardCard(
+                  context,
+                  "Reminder",
+                  Icons.notifications_active,
+                  Colors.deepOrange,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ReminderScreen()),
+                    );
+                  },
+                ),
+
+                dashboardCard(
+                  context,
+                  "Fitness Coach",
+                  Icons.sports_gymnastics,
+                  Colors.blue,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const FitnessCoachScreen(),
+                      ),
                     );
                   },
                 ),
@@ -405,8 +434,8 @@ class DashboardScreen extends StatelessWidget {
     VoidCallback onTap,
   ) {
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
       onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
       child: Card(
         elevation: 5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
